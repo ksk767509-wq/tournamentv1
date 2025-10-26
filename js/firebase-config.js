@@ -5,12 +5,12 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase
 
 // TODO: Replace these placeholders with your actual Firebase project config
 const firebaseConfig = {
-  apiKey: "REPLACE_API_KEY",
-  authDomain: "REPLACE_AUTH_DOMAIN",
-  projectId: "REPLACE_PROJECT_ID",
-  storageBucket: "REPLACE_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_MESSAGING_SENDER_ID",
-  appId: "REPLACE_APP_ID"
+  apiKey: "AIzaSyBxfnqCGm_KGojyIlMwlOPvnuw1l_e0z9Q",
+  authDomain: "tournamentv1-1a92e.firebaseapp.com",
+  projectId: "tournamentv1-1a92e",
+  storageBucket: "tournamentv1-1a92e.firebasestorage.app",
+  messagingSenderId: "340131295667",
+  appId: "1:340131295667:web:8e5be4429cfc778dd2dbc6"
 };
 
 export const app = initializeApp(firebaseConfig);
