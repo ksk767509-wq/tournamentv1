@@ -1,163 +1,192 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
   <title>Adept Play</title>
-  <!-- Tailwind CDN (play CDN for demo) -->
+  <!-- Tailwind CDN (for quick dev) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: {} }, darkMode: 'class' }
-  </script>
   <!-- Font Awesome -->
-  <script src="https://kit.fontawesome.com/your_kit_id.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="" crossorigin="anonymous" />
   <style>
-    /* Make app look native: fixed height to avoid overscroll on mobile */
+    /* App-level tweaks */
     html,body,#app{height:100%;}
+    body{background:#0f172a;color:#e6eef8;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    /* Make app look native (disable selection cursor) */
+    *{user-select:none;-webkit-user-select:none;-ms-user-select:none}
   </style>
 </head>
-<body class="bg-gray-900 text-gray-100 antialiased" oncontextmenu="return false">
+<body>
   <div id="app" class="min-h-screen flex flex-col">
-    <!-- HEADER (persistent) -->
-    <header id="app-header" class="w-full bg-gray-800/60 backdrop-blur sticky top-0 z-40">
-      <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center text-white font-bold">AP</div>
-          <div>
-            <div class="text-sm font-semibold">Adept Play</div>
-            <div id="header-sub" class="text-xs text-gray-300">Play. Compete. Win.</div>
-          </div>
+
+    <!-- Header -->
+    <header id="app-header" class="flex items-center justify-between p-4 sticky top-0 bg-gradient-to-b from-slate-900/80 to-transparent z-20">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-pink-500 flex items-center justify-center text-white font-bold">AP</div>
+        <div>
+          <div class="text-sm font-semibold">Adept Play</div>
+          <div id="header-sub" class="text-xs text-slate-400">Mobile-first Esports</div>
         </div>
-        <div class="flex items-center gap-3">
-          <div id="wallet-balance" class="text-sm font-medium">₹0</div>
-          <button id="header-profile-btn" class="p-2 rounded-lg hover:bg-gray-700/40">
-            <i class="fa fa-user"></i>
-          </button>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="wallet-badge" class="text-right">
+          <div class="text-xs text-slate-400">Wallet</div>
+          <div id="wallet-amount" class="text-sm font-semibold">₹0</div>
         </div>
+        <button id="header-profile-btn" class="p-2 rounded-lg bg-slate-800/60"><i class="fa-solid fa-user"></i></button>
       </div>
     </header>
 
-    <!-- MAIN (sections) -->
-    <main class="flex-1 overflow-auto">
-      <div class="max-w-xl mx-auto px-4 py-6">
+    <!-- Main SPA Container -->
+    <main id="main" class="flex-1 overflow-auto p-4 pb-24">
 
-        <!-- AUTH SECTION -->
-        <section id="auth-section" class="space-y-4">
-          <div class="bg-gray-800 rounded-2xl p-4 shadow">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold">Welcome</h2>
-              <div class="text-xs text-gray-400">Mobile-first SPA</div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 mb-4">
-              <button id="tab-login" class="py-2 rounded-lg bg-gray-700">Login</button>
-              <button id="tab-signup" class="py-2 rounded-lg bg-transparent border border-gray-700">Sign Up</button>
-            </div>
-            <form id="auth-form" class="space-y-3">
-              <input id="auth-username" class="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm" placeholder="Username (for signup)" />
-              <input id="auth-email" type="email" class="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm" placeholder="Email" required />
-              <input id="auth-password" type="password" class="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm" placeholder="Password" required />
-              <div class="flex justify-between items-center">
-                <button id="auth-submit" class="px-4 py-2 rounded-lg bg-indigo-600">Submit</button>
-                <button id="guest-btn" type="button" class="text-xs text-gray-400">Continue as Guest</button>
-              </div>
-            </form>
-          </div>
-        </section>
-
-        <!-- HOME SECTION -->
-        <section id="home-section" class="hidden space-y-4">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold">Upcoming Tournaments</h2>
-            <div class="text-xs text-gray-400" id="home-sub">Live updates</div>
+      <!-- AUTH SECTION -->
+      <section id="auth-section" class="max-w-xl mx-auto space-y-4">
+        <div class="bg-slate-900/60 rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Welcome back</h2>
+            <div class="text-xs text-slate-400">Play & Win</div>
           </div>
 
-          <div id="tournaments-grid" class="grid grid-cols-1 gap-3">
-            <!-- Tournament cards injected here -->
+          <!-- Tab buttons -->
+          <div class="flex bg-slate-800 rounded-lg p-1 mb-4" role="tablist">
+            <button id="tab-login" class="flex-1 py-2 rounded-lg font-medium" data-tab="login">Login</button>
+            <button id="tab-signup" class="flex-1 py-2 rounded-lg font-medium" data-tab="signup">Sign Up</button>
           </div>
-        </section>
 
-        <!-- MY TOURNAMENTS -->
-        <section id="my-tournaments-section" class="hidden space-y-4">
+          <!-- Login Form -->
+          <div id="login-form" class="space-y-3">
+            <input id="login-email" type="email" placeholder="Email" class="w-full p-3 rounded-lg bg-slate-800/50 text-sm" />
+            <input id="login-password" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-slate-800/50 text-sm" />
+            <button id="btn-login" class="w-full py-3 rounded-lg bg-indigo-600 text-white font-semibold">Login</button>
+          </div>
+
+          <!-- Signup Form -->
+          <div id="signup-form" class="space-y-3 hidden">
+            <input id="signup-username" type="text" placeholder="Username" class="w-full p-3 rounded-lg bg-slate-800/50 text-sm" />
+            <input id="signup-email" type="email" placeholder="Email" class="w-full p-3 rounded-lg bg-slate-800/50 text-sm" />
+            <input id="signup-password" type="password" placeholder="Password" class="w-full p-3 rounded-lg bg-slate-800/50 text-sm" />
+            <button id="btn-signup" class="w-full py-3 rounded-lg bg-green-600 text-white font-semibold">Create account</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- HOME SECTION -->
+      <section id="home-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold">Upcoming Tournaments</h3>
+          <div id="home-filter" class="text-xs text-slate-400">Real-time</div>
+        </div>
+        <div id="tournaments-grid" class="grid grid-cols-1 gap-3"></div>
+      </section>
+
+      <!-- MY TOURNAMENTS -->
+      <section id="my-tournaments-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="flex items-center gap-2">
+          <button id="mytab-upcoming" class="flex-1 py-2 rounded-lg">Upcoming/Live</button>
+          <button id="mytab-completed" class="flex-1 py-2 rounded-lg">Completed</button>
+        </div>
+        <div id="my-tournaments-list" class="space-y-3"></div>
+      </section>
+
+      <!-- WALLET -->
+      <section id="wallet-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="bg-slate-900/50 rounded-xl p-4">
+          <div class="text-sm text-slate-400">Current Balance</div>
+          <div id="wallet-big" class="text-2xl font-bold mt-2">₹0</div>
+          <div class="flex gap-3 mt-4">
+            <button id="btn-add-money" class="flex-1 py-2 rounded-lg bg-indigo-600">Add ₹100</button>
+            <button id="btn-withdraw" class="flex-1 py-2 rounded-lg bg-slate-700">Withdraw ₹100</button>
+          </div>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold mb-2">Transactions</h4>
+          <div id="transactions-list" class="space-y-2"></div>
+        </div>
+      </section>
+
+      <!-- PROFILE -->
+      <section id="profile-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="bg-slate-900/50 rounded-xl p-4 space-y-3">
+          <input id="profile-username" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Username" />
+          <input id="profile-email" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Email" />
           <div class="flex gap-2">
-            <button id="my-tab-active" class="flex-1 py-2 rounded-lg bg-gray-700">Upcoming / Live</button>
-            <button id="my-tab-completed" class="flex-1 py-2 rounded-lg bg-transparent border border-gray-700">Completed</button>
+            <button id="btn-update-profile" class="flex-1 py-2 rounded-lg bg-green-600">Save</button>
+            <button id="btn-change-password" class="flex-1 py-2 rounded-lg bg-yellow-600">Change Password</button>
           </div>
-          <div id="my-tournaments-list" class="space-y-3"></div>
-        </section>
+          <button id="btn-logout" class="w-full py-2 rounded-lg bg-red-600">Logout</button>
+        </div>
+      </section>
 
-        <!-- WALLET -->
-        <section id="wallet-section" class="hidden space-y-4">
-          <div class="bg-gray-800 rounded-2xl p-4">
-            <div class="text-xs text-gray-400">Wallet Balance</div>
-            <div id="wallet-display" class="text-2xl font-bold py-2">₹0</div>
-            <div class="flex gap-2">
-              <button id="add-money-btn" class="flex-1 py-2 rounded-lg bg-green-600">Add ₹100</button>
-              <button id="withdraw-btn" class="flex-1 py-2 rounded-lg bg-yellow-600">Withdraw ₹100</button>
-            </div>
-          </div>
-          <div>
-            <h3 class="text-sm font-semibold mb-2">Transactions</h3>
-            <div id="transactions-list" class="space-y-2"></div>
-          </div>
-        </section>
+      <!-- ADMIN DASHBOARD -->
+      <section id="admin-dashboard-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-900/40 p-4 rounded-lg"> <div class="text-xs text-slate-400">Users</div><div id="stat-users" class="text-xl font-bold">0</div></div>
+          <div class="bg-slate-900/40 p-4 rounded-lg"> <div class="text-xs text-slate-400">Tournaments</div><div id="stat-tournaments" class="text-xl font-bold">0</div></div>
+          <div class="bg-slate-900/40 p-4 rounded-lg"> <div class="text-xs text-slate-400">Prize Distributed</div><div id="stat-prize" class="text-xl font-bold">₹0</div></div>
+          <div class="bg-slate-900/40 p-4 rounded-lg"> <div class="text-xs text-slate-400">Commission</div><div id="stat-commission" class="text-xl font-bold">₹0</div></div>
+        </div>
+        <div class="flex gap-3">
+          <button id="btn-create-tournament" class="flex-1 py-2 rounded-lg bg-indigo-600">Create Tournament</button>
+        </div>
+        <div id="admin-tournaments-list" class="space-y-3"></div>
+      </section>
 
-        <!-- PROFILE -->
-        <section id="profile-section" class="hidden space-y-4">
-          <div class="bg-gray-800 rounded-2xl p-4">
-            <h3 class="text-sm font-semibold mb-2">Profile</h3>
-            <input id="profile-username" class="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm mb-2" />
-            <input id="profile-email" class="w-full rounded-lg bg-gray-900 px-3 py-2 text-sm mb-2" />
-            <div class="flex gap-2">
-              <button id="save-profile-btn" class="flex-1 py-2 rounded-lg bg-indigo-600">Save</button>
-              <button id="change-password-btn" class="flex-1 py-2 rounded-lg bg-gray-700">Change Password</button>
-            </div>
-            <button id="logout-btn" class="w-full mt-3 py-2 rounded-lg bg-red-600">Logout</button>
+      <!-- TOURNAMENT MANAGEMENT -->
+      <section id="tournament-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div class="bg-slate-900/50 p-4 rounded-lg space-y-3">
+          <input id="t-title" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Title" />
+          <input id="t-game" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Game Name" />
+          <div class="grid grid-cols-2 gap-2">
+            <input id="t-entry" type="number" class="p-3 rounded-lg bg-slate-800/50" placeholder="Entry Fee (₹)" />
+            <input id="t-prize" type="number" class="p-3 rounded-lg bg-slate-800/50" placeholder="Prize Pool (₹)" />
           </div>
-        </section>
-
-        <!-- ADMIN DASHBOARD -->
-        <section id="admin-dashboard-section" class="hidden space-y-4">
-          <div class="flex justify-between items-center">
-            <h2 class="text-lg font-semibold">Admin Dashboard</h2>
-            <button id="create-new-btn" class="py-2 px-3 rounded-lg bg-indigo-600">Create Tournament</button>
+          <input id="t-time" type="datetime-local" class="w-full p-3 rounded-lg bg-slate-800/50" />
+          <input id="t-commission" type="number" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Commission %" />
+          <div class="flex gap-2">
+            <button id="btn-save-tournament" class="flex-1 py-2 rounded-lg bg-green-600">Save</button>
+            <button id="btn-cancel-tournament" class="flex-1 py-2 rounded-lg bg-slate-700">Cancel</button>
           </div>
-          <div id="admin-stats" class="grid grid-cols-2 gap-3"></div>
-          <div id="admin-tournaments-list" class="space-y-3"></div>
-        </section>
+        </div>
+        <div id="admin-all-tournaments" class="space-y-3"></div>
+      </section>
 
-        <!-- MANAGE TOURNAMENT SECTION -->
-        <section id="manage-tournament-section" class="hidden space-y-4">
-          <div class="bg-gray-800 rounded-2xl p-4">
-            <h3 class="text-sm font-semibold mb-2">Manage Tournament</h3>
-            <div id="manage-details"></div>
-            <div id="manage-participants" class="mt-3"></div>
-            <div class="mt-3 flex gap-2">
-              <button id="update-room-btn" class="flex-1 py-2 rounded-lg bg-green-600">Update Room</button>
-              <button id="declare-winner-btn" class="flex-1 py-2 rounded-lg bg-yellow-600">Declare Winner</button>
-            </div>
+      <!-- MANAGE SINGLE TOURNAMENT -->
+      <section id="manage-tournament-section" class="hidden max-w-xl mx-auto space-y-4">
+        <div id="manage-tournament-header" class="bg-slate-900/50 p-3 rounded-lg"></div>
+        <div class="bg-slate-900/50 p-3 rounded-lg space-y-3">
+          <input id="room-id" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Room ID" />
+          <input id="room-pass" class="w-full p-3 rounded-lg bg-slate-800/50" placeholder="Room Password" />
+          <div class="flex gap-2">
+            <button id="btn-save-room" class="flex-1 py-2 rounded-lg bg-indigo-600">Save Room</button>
+            <button id="btn-declare" class="flex-1 py-2 rounded-lg bg-yellow-600">Declare Winner</button>
           </div>
-        </section>
+        </div>
+        <div>
+          <h4 class="text-sm font-semibold mb-2">Participants</h4>
+          <div id="participants-list" class="space-y-2"></div>
+        </div>
+      </section>
 
-      </div>
     </main>
 
-    <!-- BOTTOM NAV -->
-    <nav class="w-full bg-gray-800/60 backdrop-blur fixed bottom-4 left-0 right-0 mx-auto max-w-xl px-4">
-      <div class="bg-gray-900 rounded-3xl p-2 flex justify-between">
-        <button data-route="home" class="nav-btn flex-1 py-3 text-center"><i class="fa fa-home"></i><div class="text-xs">Home</div></button>
-        <button data-route="my" class="nav-btn flex-1 py-3 text-center"><i class="fa fa-trophy"></i><div class="text-xs">My</div></button>
-        <button data-route="wallet" class="nav-btn flex-1 py-3 text-center"><i class="fa fa-wallet"></i><div class="text-xs">Wallet</div></button>
-        <button data-route="profile" class="nav-btn flex-1 py-3 text-center"><i class="fa fa-user"></i><div class="text-xs">Profile</div></button>
-      </div>
+    <!-- Bottom navigation -->
+    <nav id="bottom-nav" class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[92%] max-w-xl bg-slate-900/70 backdrop-blur rounded-2xl p-2 flex justify-between z-30">
+      <button data-route="home" class="nav-btn flex-1 text-center py-2"> <i class="fa-solid fa-house"></i><div class="text-xs">Home</div></button>
+      <button data-route="my" class="nav-btn flex-1 text-center py-2"> <i class="fa-solid fa-list"></i><div class="text-xs">My</div></button>
+      <button data-route="wallet" class="nav-btn flex-1 text-center py-2"> <i class="fa-solid fa-wallet"></i><div class="text-xs">Wallet</div></button>
+      <button data-route="profile" class="nav-btn flex-1 text-center py-2"> <i class="fa-solid fa-user"></i><div class="text-xs">Profile</div></button>
     </nav>
 
-    <!-- Toast container -->
-    <div id="toast-root" class="fixed right-4 bottom-28 z-50"></div>
+    <!-- Toast area -->
+    <div id="toast-area" class="fixed top-6 right-4 z-50"></div>
 
   </div>
 
-  <!-- Firebase + App scripts (module) -->
+  <!-- Modules -->
   <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/utils.js"></script>
   <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/router.js"></script>
   <script type="module" src="js/ui.js"></script>
@@ -165,16 +194,14 @@
   <script type="module" src="js/admin-data.js"></script>
 
   <script>
-    // Disable text selection + copy + zoom shortcuts
-    document.addEventListener('selectstart', e => e.preventDefault());
-    document.addEventListener('copy', e => e.preventDefault());
+    // Disable right click, text selection, pinch-zoom & ctrl+scroll zoom for native-app feel
     document.addEventListener('contextmenu', e => e.preventDefault());
-    window.addEventListener('keydown', (e) => {
+    document.addEventListener('selectstart', e => e.preventDefault());
+    window.addEventListener('wheel', e => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
+    window.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=')) e.preventDefault();
-      // block F12
       if (e.key === 'F12') e.preventDefault();
     });
-    window.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault(); }, { passive: false });
   </script>
 </body>
 </html>
