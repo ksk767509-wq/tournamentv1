@@ -1,101 +1,99 @@
+// js/auth.js
 import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword, updateEmail } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js';
-import { doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js';
-import * as UI from './ui.js';
-import * as Router from './router.js';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateEmail, updatePassword, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+import { doc, setDoc, getDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { qs, showToast } from './utils.js';
 
-// Elements
-const tabLogin = document.getElementById('tab-login');
-const tabSignup = document.getElementById('tab-signup');
-const authForm = document.getElementById('auth-form');
-const authUsername = document.getElementById('auth-username');
-const authEmail = document.getElementById('auth-email');
-const authPassword = document.getElementById('auth-password');
-let mode = 'login';
+// UI elements
+const tabLogin = qs('#tab-login');
+const tabSignup = qs('#tab-signup');
+const loginForm = qs('#login-form');
+const signupForm = qs('#signup-form');
 
-tabLogin.addEventListener('click', () => { mode = 'login'; tabLogin.classList.add('bg-gray-700'); tabSignup.classList.remove('bg-gray-700'); });
-tabSignup.addEventListener('click', () => { mode = 'signup'; tabSignup.classList.add('bg-gray-700'); tabLogin.classList.remove('bg-gray-700'); });
+// Toggle tabs
+tabLogin.addEventListener('click', ()=> { loginForm.classList.remove('hidden'); signupForm.classList.add('hidden'); });
+tabSignup.addEventListener('click', ()=> { signupForm.classList.remove('hidden'); loginForm.classList.add('hidden'); });
 
-authForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = authEmail.value.trim();
-  const password = authPassword.value.trim();
-  const username = authUsername.value.trim() || email.split('@')[0];
-  try {
-    if (mode === 'signup'){
-      const cred = await createUserWithEmailAndPassword(auth, email, password);
-      // create a Firestore profile
-      await setDoc(doc(db, 'users', cred.user.uid), {
-        username, email, walletBalance: 0, createdAt: serverTimestamp(), isAdmin: false
-      });
-      UI.toast('Account created — welcome!');
-    } else {
-      await signInWithEmailAndPassword(auth, email, password);
-      UI.toast('Logged in successfully');
-    }
-  } catch (err) {
-    console.error(err);
-    UI.toast(err.message || 'Auth error');
-  }
-});
-
-// Apply guest button to create a temporary anonymous user (not using Firebase anonymous auth to keep rules simple)
-const guestBtn = document.getElementById('guest-btn');
-guestBtn.addEventListener('click', async () => {
-  // Create a throwaway user with random credentials for demo purposes
-  const rnd = Math.random().toString(36).slice(2,8);
-  const email = `guest+${rnd}@example.com`;
-  const password = `Pass#${rnd}`;
-  try {
+// Signup
+qs('#btn-signup').addEventListener('click', async ()=>{
+  const username = qs('#signup-username').value.trim();
+  const email = qs('#signup-email').value.trim();
+  const password = qs('#signup-password').value;
+  if(!username || !email || !password){ showToast('Please fill all fields'); return; }
+  try{
     const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, 'users', cred.user.uid), { username: `Guest-${rnd}`, email, walletBalance: 0, createdAt: serverTimestamp(), isAdmin: false });
-    UI.toast('Guest account created');
-  } catch (err) { UI.toast(err.message); }
+    // update display name
+    await updateProfile(cred.user, { displayName: username });
+    // create user doc in Firestore
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      username,
+      email,
+      walletBalance: 0,
+      createdAt: serverTimestamp(),
+      isAdmin: false
+    });
+    showToast('Account created — logged in');
+  }catch(err){ console.error(err); showToast(err.message || 'Sign up failed'); }
 });
 
-// Logout handler
-const logoutBtn = document.getElementById('logout-btn');
-logoutBtn.addEventListener('click', async () => {
+// Login
+qs('#btn-login').addEventListener('click', async ()=>{
+  const email = qs('#login-email').value.trim();
+  const password = qs('#login-password').value;
+  if(!email || !password){ showToast('Please enter email & password'); return; }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+    showToast('Logged in');
+  }catch(err){ console.error(err); showToast(err.message || 'Login failed'); }
+});
+
+// Logout
+qs('#btn-logout').addEventListener('click', async ()=>{
   await signOut(auth);
-  UI.toast('Logged out');
+  showToast('Logged out');
 });
 
-// Profile save/change password
-const saveProfileBtn = document.getElementById('save-profile-btn');
-const changePasswordBtn = document.getElementById('change-password-btn');
-const profileUsername = document.getElementById('profile-username');
-const profileEmail = document.getElementById('profile-email');
-
-saveProfileBtn.addEventListener('click', async () => {
+// Profile update & password change
+qs('#btn-update-profile').addEventListener('click', async ()=>{
+  const username = qs('#profile-username').value.trim();
+  const email = qs('#profile-email').value.trim();
   const user = auth.currentUser;
-  if (!user) return UI.toast('Not signed in');
-  const newName = profileUsername.value.trim();
-  const newEmail = profileEmail.value.trim();
-  try {
-    if (newEmail && newEmail !== user.email) await updateEmail(user, newEmail);
-    await setDoc(doc(db, 'users', user.uid), { username: newName, email: newEmail }, { merge: true });
-    UI.toast('Profile updated');
-  } catch (err) { UI.toast(err.message); }
+  if(!user){ showToast('No user'); return; }
+  try{
+    if(username) await updateProfile(user, { displayName: username });
+    if(email && email !== user.email) await updateEmail(user, email);
+    // update Firestore user doc
+    await setDoc(doc(db, 'users', user.uid), { username, email }, { merge: true });
+    showToast('Profile updated');
+  }catch(err){ console.error(err); showToast(err.message || 'Update failed'); }
 });
 
-changePasswordBtn.addEventListener('click', async () => {
-  const user = auth.currentUser;
-  const newPass = prompt('Enter new password (min 6 chars)');
-  if (!newPass) return;
-  try { await updatePassword(user, newPass); UI.toast('Password updated'); }
-  catch (err) { UI.toast(err.message); }
+qs('#btn-change-password').addEventListener('click', async ()=>{
+  const newPass = prompt('Enter new password (min length enforced by Firebase)');
+  if(!newPass) return; const user = auth.currentUser; if(!user){ showToast('Not signed in'); return; }
+  try{ await updatePassword(user, newPass); showToast('Password changed'); }catch(err){ console.error(err); showToast(err.message || 'Change failed'); }
 });
 
-// Auth state observer
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // fetch additional profile
-    const userDoc = await (await import('https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js')).getDoc((await import('./firebase-config.js')).doc((await import('./firebase-config.js')).db, 'users', user.uid)).catch(()=>null);
-    // Show home
-    Router.navigate('home');
-    UI.updateHeader(user.uid);
-  } else {
-    Router.navigate('auth');
-    UI.updateHeader(null);
+// Broadcast auth changes via custom event
+onAuthStateChanged(auth, async (user)=>{
+  const evt = new CustomEvent('authChanged', { detail: { user } });
+  window.dispatchEvent(evt);
+  // If user logged in, ensure user doc exists
+  if(user){
+    try{
+      const userDoc = await getDoc(doc(db,'users',user.uid));
+      if(!userDoc.exists()){
+        // create a minimal profile
+        await setDoc(doc(db,'users',user.uid),{
+          username: user.displayName || 'Player'+user.uid.substring(0,6),
+          email: user.email,
+          walletBalance: 0,
+          createdAt: serverTimestamp(),
+          isAdmin: false
+        });
+      }
+    }catch(e){ console.error('Ensure user doc', e); }
   }
 });
+
+console.log('Auth module loaded');
